@@ -8,6 +8,9 @@ let getAPIURL = () => {
     case 'trial.zumen.in':
       returnUrl = 'trial.zumen.in';
       break;
+    case 'internal-trial.zumen.in':
+      returnUrl = 'trial.zumen.in';
+      break;
     default:
       returnUrl = '103.21.53.11:8572'; 
       break;
@@ -25,8 +28,11 @@ let API_URL_JAVA = () => {
     case 'trial.zumen.in':
       API_URL_JAVA = 'https://' + getAPIURL()
       break;
+    case 'internal-trial.zumen.in':
+      API_URL_JAVA = 'https://' + getAPIURL()
+      break;
     default:
-      API_URL_JAVA = 'http://' + getAPIURL();     
+      API_URL_JAVA = 'https://' + getAPIURL();     
       break;
   }
   return API_URL_JAVA;
