@@ -1,6 +1,17 @@
 import axios from 'axios';
 import AppConfig from '../../config/appConfig';
 import * as actionTypes from './actionTypes';
+import {
+    showErrorToast,
+    showSuccessToast,
+    showWarningToast
+  } from '../../common/commonFunctions';
+
+//Set default URL of API
+axios.defaults.baseURL = AppConfig.API_URL_JAVA;
+axios.defaults.timeout = 0;
+
+let apiFailCounter = 0;
 
 export const  authStart = () =>{
     return {
@@ -48,6 +59,22 @@ export const authLogout = () =>{
     };
 }
 
+export const buyerLogin =  {
+    url: '/userauth/oauth/token',
+    method: 'POST',
+    data: {},
+    showResultMessage: false,
+    showErrorMessage: false
+}
+
+export const injectParamsToUrl = (_url_, paramObj) => {
+    var url = _url_;
+    for (let key in paramObj) {
+      url = url.replace(':' + key, paramObj[key]);
+    }
+    return url;
+};
+
 export const checkAuthTimeout = (expirationTime) => {
     return dispatch => {
         setTimeout(()=>{
@@ -56,27 +83,123 @@ export const checkAuthTimeout = (expirationTime) => {
     }
 }
 
+
+
+export const handleErrorByStatus = error => {
+    switch (error.status) {
+      case 400:
+        try {
+          const message = error.data.error_description;
+          showErrorToast(message);
+        } catch (error) { }
+        try {
+          const message = error.data.responseMessage;
+          showErrorToast(message);
+        } catch (error) { }
+        try {
+          const message = error.responseMessage;
+          showErrorToast(message);
+        } catch (error) { }
+        break;
+      case 406:
+        try {
+          const message = error.data.error_description;
+          showWarningToast(message);
+        } catch (error) { }
+        try {
+          const message = error.data.responseMessage;
+          showWarningToast(message);
+        } catch (error) { }
+        try {
+          const message = error.responseMessage;
+          showWarningToast(message);
+        } catch (error) { }
+        break;
+      case 500:
+        try {
+          const message = error.data.message;
+          showErrorToast(message);
+        } catch (error) { }
+        break;
+      case 504:
+        try {
+          const message = error.data.error_description;
+          showErrorToast(message);
+        } catch (error) { }
+        try {
+          const message = error.data.responseMessage;
+          showErrorToast(message);
+        } catch (error) { }
+        try {
+          const message = error.responseMessage;
+          showErrorToast(message);
+        } catch (error) { }
+        break;
+      default:
+        break;
+    }
+  };
+
 export const auth = (userName, password, roleId, hostName, timeZone, isSignup) =>{
     return dispatch =>{
         dispatch(authStart());
-        const queryParams = '?grant_type=password&username='+userName+'&password='+password+'&roleId='+roleId+'&host='+hostName+'&tz='+timeZone;
-        const authData = {
-           
+        const userDetails = {
+            grant_type: 'password',
+            username: userName,
+            password: password,
+            roleId: roleId,
+          }
+        var encodedBody = [];
+        for (var property in userDetails) {
+        var encodedKey = encodeURIComponent(property);
+        var encodedValue = encodeURIComponent(userDetails[property]);
+        encodedBody.push(encodedKey + "=" + encodedValue);
         }
-        let url = AppConfig.API_URL_JAVA +'/userauth/oauth/token';
-        axios.post(url+queryParams, authData)
-        .then(res => {            
-            const expirationDate = new Date(new Date().getTime() + res.data.expires_in*1000);
-            localStorage.setItem('accessToken', res.data.access_token);
-            localStorage.setItem('userId', res.data.id);
-            localStorage.setItem('expirationDate',expirationDate);
-            localStorage.setItem('userRole',res.data.userRole);
-            dispatch(authSuccess(res.data.access_token, res.data.id));
-            dispatch(checkAuthTimeout(res.data.expires_in));
-        })
-        .catch(err =>{
-            dispatch(authFail(err.response.data));
-        })
+        encodedBody = encodedBody.join("&");
+        let apiDetails = buyerLogin;
+        let requestObject = Object.assign({}, apiDetails);
+        requestObject.data = encodedBody;
+        requestObject.url = injectParamsToUrl(requestObject.url, encodedBody);  
+
+        axios(requestObject)
+            .then(function (result) {
+                const expirationDate = new Date(new Date().getTime() + result.data.expires_in*1000);
+                localStorage.setItem('accessToken', result.data.access_token);
+                localStorage.setItem('userId', result.data.id);
+                localStorage.setItem('expirationDate',expirationDate);
+                localStorage.setItem('userRole',result.data.userRole);
+                dispatch(authSuccess(result.data.access_token, result.data.id));
+                dispatch(checkAuthTimeout(result.data.expires_in));
+                apiFailCounter = 0;
+                if (result.data && result.data.status === 200) {
+                    if (result.data.responseMessage) {
+                    const message = result.data.responseMessage;
+                    if (requestObject.showResultMessage === true)
+                        showSuccessToast(message);
+                    }
+                } else {
+                    if (requestObject.showErrorMessage === true)
+                    handleErrorByStatus(result.data);
+                }
+                return result;
+            }).catch(function (error) {
+                dispatch(authFail(error));
+                if (error && error.response) {
+                    if (requestObject.showErrorMessage === true)
+                    handleErrorByStatus(error.response);
+                }
+                if (
+                    error.config.maxContentLength - 1 &&
+                    error.toString().indexOf('Network Error') > -1
+                ) {
+                    apiFailCounter++;
+                    if (apiFailCounter >= 3) {
+                    localStorage.clear();
+                    window.open(window.location.origin, '_self');
+                    }
+                }
+                return error.response;
+            });
     };
 };
 

@@ -6,7 +6,6 @@ import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import thunk from 'redux-thunk';
 
 import App from './components/App';
-import * as serviceWorker from './serviceWorker';
 import primaryUserLogReducer from './store/reducers/primaryUserLogs';
 import authReducer from './store/reducers/auth';
 
@@ -31,4 +30,4 @@ const app = (
 
 ReactDOM.render(app, document.getElementById('root'));
 
-serviceWorker.register();
+// serviceWorker.register();

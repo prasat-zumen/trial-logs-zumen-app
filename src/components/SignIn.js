@@ -5,9 +5,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -46,11 +45,9 @@ const useStyles = makeStyles((theme) => ({
 export default function SignIn(props) {
 
   const classes = useStyles();
-  const theme = useTheme();
   
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const matchesSM = useMediaQuery(theme.breakpoints.down("sm")); 
 
   const signInHandler = (event) => {
     event.preventDefault();

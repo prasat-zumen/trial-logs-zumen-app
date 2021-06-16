@@ -145,11 +145,14 @@ function Header(props) {
     useEffect( ()=> {
         [...routes].forEach(route=>{
             switch(window.location.pathname) {
+                case "/" :
+                    props.setValue(0);
+                    break;
                 case `${route.link}`:
                     if(props.value !== route.activeIndex) {
                         props.setValue(route.activeIndex)                        
                     }
-                    break;
+                    break;                
                 default:
                     break;
             }

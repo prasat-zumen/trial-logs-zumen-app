@@ -6,6 +6,7 @@ import { withStyles } from "@material-ui/core/styles";
 
 import * as actions from '../../store/actions/auth';
 import SignIn from '../../components/SignIn';
+import JSEncrypt from 'jsencrypt';
 
 const styles = (theme) => ({
     root: {
@@ -29,8 +30,12 @@ class Auth extends Component {
     }
 
     signInClicked = (username, password) => {
+        let pub_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCb6UbdaP7pIGCjWDWFxyUk/MZp0LW1aheUQ2Ggbn7Kw4QYGFK3dH5yjcIm8whjnx2qim0wreTv0KqbmGHZSHjL/Gu9mnY9bZL1CPx4mEZ8Q5qCCiU0eK/5VkDA5bwPmX2JGt0TIv3uCy7Kb6ts6CNCKyYqQK8hh81aigy2k/rZdQIDAQAB';
         let userName = username;
-        let passWord = btoa(password);
+        // let passWord = btoa(password);
+        const encrypt = new JSEncrypt()
+        encrypt.setPublicKey(pub_key)
+        const passWord = encrypt.encrypt(password);
         const roleId = 3;
         let baseURL = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port;
         //converted to Base64

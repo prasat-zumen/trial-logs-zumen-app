@@ -35,7 +35,6 @@ export const fetchPrimaryUserLogs = (primaryUserLogs) => {
         }
         axios.put(url, body, headers)
             .then(res=>{
-                console.log(res);
                 dispatch(fetchPrimaryUserLogSuccess(res.data.resourceData));
             }).catch(err=>{
                 dispatch(fetchPrimaryUserLogFail(err));
@@ -56,7 +55,6 @@ export const fetchTrialUserLogs = (trialUserLogs) => {
         }
         axios.put(url, body, headers)
             .then(res=>{
-                console.log(res);
                 dispatch(fetchPrimaryUserLogSuccess(res.data.resourceData));
             }).catch(err=>{
                 dispatch(fetchPrimaryUserLogFail(err));
